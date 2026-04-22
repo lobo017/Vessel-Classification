@@ -1,0 +1,66 @@
+# =============================================================================
+# config.yaml — VesselMNIST3D 3D Classification Configuration
+#
+# Edit this file to tune hyperparameters without touching source code.
+# =============================================================================
+
+# ── Dataset ──────────────────────────────────────────────────────────────────
+data:
+  data_flag: "vesselmnist3d"    # MedMNIST dataset identifier
+  download: true                # Auto-download if not present
+  data_root: "./data"           # Local directory to cache downloads
+  image_size: 28                # 28 = standard MedMNIST | 64 = MedMNIST+
+  # NOTE: num_workers > 0 requires running via  python -m src.train
+  # On Windows, set num_workers: 0 if you see DataLoader multiprocessing errors.
+  num_workers: 4
+
+# ── Model ────────────────────────────────────────────────────────────────────
+model:
+  name: "resnet3d_se"           # Architecture identifier (for logging)
+  in_channels: 1                # Single-channel grayscale 3D volumes
+  num_classes: 2                # Binary: 0=Healthy Vessel, 1=Aneurysm
+  base_channels: 32             # Feature map width at stage 1
+                                # Stages: 32 → 64 → 128 → 256
+  se_reduction: 8               # SE squeeze ratio (channels / 8 in bottleneck)
+  dropout_rate: 0.3             # Applied before classifier head & in blocks
+  use_se: true                  # Toggle SE channel-attention on/off
+
+# ── Training ─────────────────────────────────────────────────────────────────
+training:
+  batch_size: 32                # Reduce to 16 if GPU OOM
+  num_epochs: 100
+  learning_rate: 0.001          # Peak LR after warmup
+  weight_decay: 0.01            # AdamW decoupled weight decay
+  optimizer: "adamw"
+
+  # Learning rate schedule: linear warmup → cosine annealing
+  scheduler: "cosine_with_warmup"
+  warmup_epochs: 5              # LR ramps 0 → learning_rate over these epochs
+
+  # Early stopping monitors val AUC (mode=max)
+  early_stopping_patience: 15   # Stop if no AUC improvement for N epochs
+
+  # Gradient clipping to prevent exploding gradients in 3D convs
+  grad_clip: 1.0
+
+  # Label smoothing regularisation in CrossEntropyLoss
+  label_smoothing: 0.1
+
+# ── 3D Augmentation (training only) ──────────────────────────────────────────
+augmentation:
+  random_flip: true             # Axis-independent random flips (p=0.5 per axis)
+  random_rotate: true           # Random rotations in all 3 planes
+  random_rotate_degrees: 15.0   # ±15° rotation range
+  random_rotate_prob: 0.5       # Probability of applying rotation
+  intensity_shift: 0.1          # Additive shift range  [-0.1, +0.1]
+  intensity_scale: 0.1          # Multiplicative scale  [0.9, 1.1]
+  intensity_prob: 0.5
+  gaussian_noise_std: 0.02      # Gaussian noise σ
+  gaussian_noise_prob: 0.3
+
+# ── Output Paths ──────────────────────────────────────────────────────────────
+output:
+  checkpoint_dir: "./outputs/checkpoints"
+  log_dir: "./outputs/logs"
+  results_dir: "./outputs/results"
+  log_level: "INFO"
