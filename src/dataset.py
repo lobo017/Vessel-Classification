@@ -279,7 +279,7 @@ class VesselMNIST3DDataset(Dataset):
 
         # ── 6. Convert to PyTorch tensors ─────────────────────────────────────
         volume_tensor = torch.from_numpy(volume.copy()).float()
-        label_tensor = torch.tensor(int(self.labels[idx]), dtype=torch.long)
+        label_tensor = torch.tensor(self.labels[idx].item(), dtype=torch.long)
 
         return volume_tensor, label_tensor
 
@@ -385,7 +385,7 @@ def get_dataloaders(cfg: Dict[str, Any]) -> Dict[str, DataLoader]:
             batch_size=int(train_cfg.get("batch_size", 32)),
             shuffle=is_train,
             num_workers=num_workers,
-            pin_memory=True,
+            pin_memory=False,
             drop_last=is_train,          # Avoid incomplete final batch in training
             persistent_workers=use_persistent,
         )
