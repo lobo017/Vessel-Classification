@@ -49,8 +49,27 @@ Thumbs.db
 *.swp
 *.swo
 
-# Project Specific
+# ---------------------------------------------------
+# Project Specific (Data & Outputs)
+# ---------------------------------------------------
+# Ignore contents but keep the directories
 data/*
 !data/.gitkeep
 outputs/*
 !outputs/.gitkeep
+
+# ---------------------------------------------------
+# PyTorch / Deep Learning / Data Science
+# ---------------------------------------------------
+# Model weights and checkpoints
+*.pt
+*.pth
+*.ckpt
+*.onnx
+
+# Data arrays and datasets (Catch-all just in case they are outside data/)
+*.npy
+*.npz
+*.h5
+*.hdf5
+*.csv
